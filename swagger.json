@@ -11,7 +11,7 @@
   },
   "consumes": ["application/json", "multipart/form-data"],
   "produces": ["application/json"],
-  "servers": [{ "url": "https://tp-backend-905x.onrender.com" }],
+  "servers": [{ "url": "https://task-pro-backend-zmvs.onrender.com" }],
   "tags": [
     {
       "name": "Auth",
