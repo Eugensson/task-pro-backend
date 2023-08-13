@@ -96,7 +96,7 @@
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "Created session for existing user",
             "content": {
               "application/json": {
@@ -144,18 +144,60 @@
         "tags": ["Auth"],
         "summary": "User logout",
         "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "The accessToken issued to the current user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": { "description": "User logout" },
+          "401": {
+            "description": "Missing header with authorization token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorUnauthorizedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/api/auth/refresh": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "User logout",
+        "security": [{ "Bearer": [] }],
         "requestBody": {
           "description": "",
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LogoutRequest"
+                "$ref": "#/components/schemas/RefreshRequest"
               }
             }
           }
         },
         "responses": {
+          "200": {
+            "description": "Update accessToken and refreshToken",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshResponse"
+                }
+              }
+            }
+          },
           "204": { "description": "User logout" },
           "401": {
             "description": "Missing header with authorization token",
@@ -175,17 +217,17 @@
         "tags": ["Users"],
         "summary": "Get current user's data",
         "security": [{ "Bearer": [] }],
-        "requestBody": {
-          "description": "",
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CurrentRequest"
-              }
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "The accessToken issued to the current user",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "Logged user returned",
@@ -213,6 +255,17 @@
         "tags": ["Users"],
         "summary": "Edit current user's profile",
         "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "The accessToken issued to the current user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "description": "",
           "required": true,
@@ -258,11 +311,23 @@
         }
       }
     },
+
     "/api/users/avatars": {
       "patch": {
         "tags": ["Users"],
         "summary": "Edit current user's avatar",
         "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "The accessToken issued to the current user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "description": "",
           "required": true,
@@ -313,6 +378,17 @@
         "tags": ["Boards"],
         "summary": "Get all boards for current user",
         "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "The accessToken issued to the current user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Boards found",
@@ -336,6 +412,17 @@
         "tags": ["Boards"],
         "summary": "Add a new board for current user",
         "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "The accessToken issued to the current user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -378,6 +465,17 @@
         "tags": ["Boards"],
         "summary": "Edit a board for current user",
         "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "The accessToken issued to the current user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": { "description": "The board was successfully updated" },
           "400": { "description": "Board update failed" },
@@ -388,6 +486,17 @@
         "tags": ["Boards"],
         "summary": "Delete a board for current user",
         "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "The accessToken issued to the current user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": { "description": "The board was successfully deleted" },
           "401": { "description": "Missing header with authorization token" },
@@ -401,6 +510,17 @@
         "tags": ["Helper"],
         "summary": "Send a help request",
         "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "The accessToken issued to the current user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "description": "",
           "required": true,
@@ -440,6 +560,11 @@
   },
   "components": {
     "schemas": {
+      "Bearer": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header"
+      },
       "RegisterRequest": {
         "type": "object",
         "required": ["username", "email", "password"],
@@ -498,25 +623,49 @@
       },
       "LoginResponse": {
         "type": "object",
-        "required": ["token"],
+        "required": ["accessToken", "refreshToken"],
         "properties": {
-          "token": {
+          "accessToken": {
             "type": "string",
             "description": "User's JWTtoken",
             "format": "JWTtoken",
             "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZDNiOTFhNzJlNjM2MjdhMDZkYjgxYiIsImlhdCI8MTY5MTY2MzgyNywiZXhwIjoxNjkxNzQ2NjI8fQ.9BIlfDFwOIhcwddT1GLDd-Ri08H7JVWPGFDVVAicLOw"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "User's JWTtoken",
+            "format": "JWTtoken",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZDNiOTFhNzJlNjM2MjdhMDZkYjgxYiIsImlhdCI8MTY5MTY2MzgyNywiZXhwIjoxNjkxNzQ2NjI8fQ.9BIlfDFwOIhcwddT1GLDd-Ri08H7JVWPGFDVVAicASd"
           }
         }
       },
-      "LogoutRequest": {
+      "RefreshRequest": {
         "type": "object",
-        "required": ["token"],
+        "required": ["refreshToken"],
         "properties": {
-          "token": {
+          "refreshToken": {
             "type": "string",
             "description": "User's JWTtoken",
             "format": "JWTtoken",
-            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZDNiOTFhNzJlNjM2MjdhMDZkYjgxYiIsImlhdCI8MTY5MTY2MzgyNywiZXhwIjoxNjkxNzQ2NjI8fQ.9BIlfDFwOIhcwddT1GLDd-Ri08H7JVWPGFDVVAicLOw"
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZDNiOTFhNzJlNjM2MjdhMDZkYjgxYiIsImlhdCI8MTY5MTY2MzgyNywiZXhwIjoxNjkxNzQ2NjI8fQ.9BIlfDFwOIhcwddT1GLDd-Ri08H7JVWPGFDVVAicASd"
+          }
+        }
+      },
+      "RefreshResponse": {
+        "type": "object",
+        "required": ["accessToken", "refreshToken"],
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "User's JWTtoken",
+            "format": "JWTtoken",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZDNiOTFhNzJlNjM2MjdhMDZkYjgxYiIsImlhdCI8MTY5MTY2MzgyNywiZXhwIjoxNjkxNzQ2NjI8fQ.9BIlfDFwOIhcwddT1GLDd-Ri08H7JVWPGFDVVAiaMUk"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "User's JWTtoken",
+            "format": "JWTtoken",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZDNiOTFhNzJlNjM2MjdhMDZkYjgxYiIsImlhdCI8MTY5MTY2MzgyNywiZXhwIjoxNjkxNzQ2NjI8fQ.9BIlfDFwOIhcwddT1GLDd-Ri08H7JVWPGFDVVAicDFv"
           }
         }
       },
@@ -542,7 +691,8 @@
           "username",
           "avatarURL",
           "boards",
-          "token"
+          "accessToken",
+          "refreshToken"
         ],
         "properties": {
           "_id": {
@@ -581,11 +731,17 @@
             "description": "User's boards",
             "example": "[]"
           },
-          "token": {
+          "accessToken": {
             "type": "string",
             "description": "User's JWTtoken",
             "format": "JWTtoken",
             "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZDNiOTFhNzJlNjM2MjdhMDZkYjgxYiIsImlhdCI8MTY5MTY2MzgyNywiZXhwIjoxNjkxNzQ2NjI8fQ.9BIlfDFwOIhcwddT1GLDd-Ri08H7JVWPGFDVVAicLOw"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "User's JWTtoken",
+            "format": "JWTtoken",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZDNiOTFhNzJlNjM2MjdhMDZkYjgxYiIsImlhdCI8MTY5MTY2MzgyNywiZXhwIjoxNjkxNzQ2NjI8fQ.9BIlfDFwOIhcwddT1GLDd-Ri08H7JVWPGFDVVAicASd"
           }
         }
       },
