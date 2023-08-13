@@ -198,13 +198,12 @@
               }
             }
           },
-          "204": { "description": "User logout" },
-          "401": {
-            "description": "Missing header with authorization token",
+          "403": {
+            "description": "Refresh token is not valid",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorUnauthorizedResponse"
+                  "$ref": "#/components/schemas/ErrorUpdateTokensResponse"
                 }
               }
             }
@@ -930,6 +929,17 @@
             "type": "string",
             "description": "Error message",
             "example": "Not authorized"
+          }
+        }
+      },
+      "ErrorUpdateTokensResponse": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Error message",
+            "example": "Invalid signature"
           }
         }
       },
